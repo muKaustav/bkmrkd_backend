@@ -1,8 +1,7 @@
 const bcrypt = require('bcrypt')
-const Validator = require('validatorjs')
 const { Snowflake } = require('@theinternetfolks/snowflake')
 
-module.exports = (sequelize, DataTypes) => {
+module.exports = (sequelize, DataTypes, models) => {
     const User = sequelize.define('User', {
         id: {
             type: DataTypes.STRING,
@@ -14,47 +13,26 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true,
             defaultValue: null,
             validate: {
-                validator: (value) => {
-                    const validation = new Validator({ name: value }, { name: 'required|string|min:2|max:255' })
-                    if (validation.fails()) {
-                        throw new Error(validation.errors.first('name'))
-                    }
-                },
+                len: [2, 255],
             },
         },
         email: {
             type: DataTypes.STRING,
             unique: true,
             validate: {
-                validator: (value) => {
-                    const validation = new Validator({ email: value }, { email: 'required|email' })
-                    if (validation.fails()) {
-                        throw new Error(validation.errors.first('email'))
-                    }
-                },
+                len: [2, 255],
             },
         },
         password: {
             type: DataTypes.STRING,
             validate: {
-                validator: (value) => {
-                    const validation = new Validator({ password: value }, { password: 'required|string|min:2|max:255' })
-                    if (validation.fails()) {
-                        throw new Error(validation.errors.first('password'))
-                    }
-                },
+                len: [2, 255],
             }
         },
-        role:{
+        role: {
             type: DataTypes.STRING,
             defaultValue: 'USER',
             validate: {
-                validator: (value) => {
-                    const validation = new Validator({ role: value }, { role: 'required|string' })
-                    if (validation.fails()) {
-                        throw new Error(validation.errors.first('role'))
-                    }
-                },
                 isIn: [['USER', 'ADMIN']],
             },
         }
@@ -71,6 +49,12 @@ module.exports = (sequelize, DataTypes) => {
             user.password = await bcrypt.hash(user.password, 10)
         }
     })
+
+    User.associate = models => {
+        User.hasMany(models.Bookshelf, {
+            foreignKey: 'owner',
+        })
+    }
 
     return User
 }

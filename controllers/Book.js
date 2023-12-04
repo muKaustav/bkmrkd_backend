@@ -1,5 +1,23 @@
 const Book = require('../models').Book
 
+let createBook = async (req, res) => {
+    try {
+        let book = await Book.create(req.body)
+
+        res.status(201).json({
+            status: 'successful',
+            data: { book },
+        })
+    } catch (error) {
+        console.log(error)
+
+        res.status(500).json({
+            status: 'error',
+            message: 'Internal Server Error',
+        })
+    }
+}
+
 let getBooks = async (req, res) => {
     try {
         let page = req.query.page || 1
@@ -110,4 +128,4 @@ let deleteBook = async (req, res) => {
     }
 }
 
-module.exports = { getBooks, deleteBook, updateBook, getBookById }
+module.exports = { createBook, getBooks, getBookById, updateBook, deleteBook }

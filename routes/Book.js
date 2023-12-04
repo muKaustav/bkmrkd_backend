@@ -4,6 +4,7 @@ let { isAdmin } = require('../middleware/utils')
 
 const router = express.Router()
 
+router.post('/', isAdmin, bookController.createBook)
 router.get('/', bookController.getBooks)
 router.get('/:id', bookController.getBookById)
 router.put('/:id', isAdmin, bookController.updateBook)

@@ -1,8 +1,4 @@
-
-const Validator = require('validatorjs');
-const { DataTypes } = require('sequelize');
-
-module.exports = (sequelize) => {
+module.exports = (sequelize, DataTypes) => {
     const Book = sequelize.define('Book', {
         book_id: {
             type: DataTypes.INTEGER,
@@ -13,32 +9,14 @@ module.exports = (sequelize) => {
             type: DataTypes.TEXT,
             allowNull: false,
             validate: {
-                len: [2, 50000], 
-                validator: (value) => {
-                    const validation = new Validator(
-                        { title_without_series: value },
-                        { title_without_series: 'required|TEXT|min:2|max:50000' }
-                    );
-                    if (validation.fails()) {
-                        throw new Error(validation.errors.first('title_without_series'));
-                    }
-                },
+                len: [2, 50000],
             },
         },
         book_description: {
             type: DataTypes.TEXT,
             allowNull: false,
             validate: {
-                len: [2, 50000], 
-                validator: (value) => {
-                    const validation = new Validator(
-                        { book_description: value },
-                        { book_description: 'required|TEXT|min:2|max:50000' }
-                    );
-                    if (validation.fails()) {
-                        throw new Error(validation.errors.first('book_description'));
-                    }
-                },
+                len: [2, 50000],
             },
         },
         publication_year: {
@@ -49,7 +27,7 @@ module.exports = (sequelize) => {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000], 
+                len: [2, 50000],
             },
         },
         ratings_count: {
@@ -64,21 +42,21 @@ module.exports = (sequelize) => {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000], 
+                len: [2, 50000],
             },
         },
         book_url: {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000], 
+                len: [2, 50000],
             },
         },
         is_ebook: {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000], 
+                len: [2, 50000],
             },
         },
         num_pages: {
@@ -95,7 +73,15 @@ module.exports = (sequelize) => {
             defaultValue: DataTypes.NOW,
             allowNull: true,
         }
-    });
+    })
 
-    return Book;
-};
+    Book.associate = models => {
+        Book.belongsToMany(models.Bookshelf, {
+            through: 'BookshelfBook',
+            foreignKey: 'book_id',
+            onDelete: 'CASCADE',
+        })
+    }
+
+    return Book
+}
