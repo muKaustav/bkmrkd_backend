@@ -44,6 +44,19 @@ module.exports = (sequelize, DataTypes) => {
                     }
                 },
             }
+        },
+        role:{
+            type: DataTypes.STRING,
+            defaultValue: 'USER',
+            validate: {
+                validator: (value) => {
+                    const validation = new Validator({ role: value }, { role: 'required|string' })
+                    if (validation.fails()) {
+                        throw new Error(validation.errors.first('role'))
+                    }
+                },
+                isIn: [['USER', 'ADMIN']],
+            },
         }
     }, {
         timestamps: true,

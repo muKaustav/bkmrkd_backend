@@ -26,6 +26,7 @@ let login = async (req, res) => {
                 id: user.id,
                 email: user.email,
                 name: user.name,
+                role: user.role,
             },
         }
 
@@ -48,20 +49,25 @@ let login = async (req, res) => {
 
 let signup = async (req, res) => {
     try {
-        let { name, email, password } = req.body
+        let { name, email, password, role } = req.body
         let user = await User.findOne({ where: { email } })
+
+        if (role && !['USER', 'ADMIN'].includes(role)) {
+            return res.status(400).json({ status: 'error', message: 'Invalid role' });
+        }
 
         if (user) {
             return res.status(400).json({ status: 'error', message: 'User already exists' })
         }
 
-        user = await User.create({ name, email, password })
+        user = await User.create({ name, email, password, role })
 
         let payload = {
             user: {
                 id: user.id,
                 email: user.email,
                 name: user.name,
+                role: user.role,
             },
         }
 
