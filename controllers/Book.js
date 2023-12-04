@@ -10,6 +10,7 @@ let getBooks = async (req, res) => {
         let books = await Book.findAll({
             limit: pageSize,
             offset: offset,
+            attributes: ['book_id', 'book_average_rating', 'cover_page'],
         })
 
         res.status(200).json({
