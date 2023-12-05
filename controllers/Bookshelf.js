@@ -34,7 +34,7 @@ let getBookshelves = async (req, res) => {
         let bookshelves = await Bookshelf.findAll({
             limit: pageSize,
             offset: offset,
-            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
+            attributes: ['id', 'name', 'type', 'image'],
         })
 
         res.status(200).json({
@@ -279,7 +279,7 @@ let getMyBookshelves = async (req, res) => {
             where: {
                 owner: userId,
             },
-            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
+            attributes: ['id', 'name', 'type', 'image'],
         })
 
         for (let i = 0; i < bookshelves.length; i++) {
@@ -328,7 +328,7 @@ let getBookshelvesByOwner = async (req, res) => {
                 owner: userId,
                 bookshelf_type: 'PUBLIC',
             },
-            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_image'],
+            attributes: ['id', 'name', 'image'],
         })
 
         res.status(200).json({

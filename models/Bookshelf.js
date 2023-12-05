@@ -1,6 +1,6 @@
 module.exports = (sequelize, DataTypes) => {
     const Bookshelf = sequelize.define('Bookshelf', {
-        bookshelf_id: {
+        id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
             primaryKey: true,
@@ -12,28 +12,30 @@ module.exports = (sequelize, DataTypes) => {
                 len: [2, 50000],
             },
         },
-        bookshelf_type: {
+        type: {
             type: DataTypes.STRING,
             defaultValue: 'PRIVATE',
             validate: {
                 isIn: [['PRIVATE', 'PUBLIC']],
             },
         },
-        bookshelf_name: {
+        name: {
             type: DataTypes.TEXT,
             allowNull: false,
-            validate: {
-                len: [2, 50000],
-            },
         },
-        bookshelf_description: {
+        description: {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
                 len: [2, 50000],
             },
         },
-        bookshelf_image: {
+        rating: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            defaultValue: 0,
+        },
+        image: {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
