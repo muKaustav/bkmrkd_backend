@@ -276,6 +276,23 @@ let getMyBookshelves = async (req, res) => {
             attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
         })
 
+        for (let i = 0; i < bookshelves.length; i++) {
+            let bookshelf = bookshelves[i]
+
+            let books = await bookshelf.getBooks({
+                limit: 5,
+                attributes: ['book_id', 'book_average_rating', 'cover_page']
+            })
+
+            bookshelf.dataValues.books = books
+
+            for (let j = 0; j < books.length; j++) {
+                let book = books[j]
+
+                delete book.dataValues.BookshelfBook
+            }
+        }
+
         res.status(200).json({
             status: 'successful',
             data: { bookshelves },
