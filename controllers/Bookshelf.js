@@ -326,7 +326,7 @@ let getBookshelvesByOwner = async (req, res) => {
             offset: offset,
             where: {
                 owner: userId,
-                bookshelf_type: 'PUBLIC',
+                type: 'PUBLIC',
             },
             attributes: ['id', 'name', 'image'],
         })
