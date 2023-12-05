@@ -170,6 +170,12 @@ let getBookshelfBooks = async (req, res) => {
             attributes: ['book_id', 'book_average_rating', 'cover_page']
         })
 
+        for (let i = 0; i < books.length; i++) {
+            let book = books[i]
+
+            delete book.dataValues.BookshelfBook
+        }
+
         res.status(200).json({
             status: 'successful',
             data: { books },
