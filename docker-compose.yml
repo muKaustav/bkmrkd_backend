@@ -1,0 +1,18 @@
+version: '3'
+services:
+  api-server:
+    build: .
+    restart: always
+    ports:
+      - '5000:5000'
+    volumes: 
+      - .:/app
+      - /app/node_modules/bcrypt/
+    environment:
+      NODE_ENV: development
+    networks:
+      - bkmrkd
+
+networks:
+  bkmrkd:
+    driver: bridge
