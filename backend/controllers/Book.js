@@ -1,22 +1,38 @@
-const Book = require('../models').Book
 const axios = require('axios')
-const { Client } = require('@elastic/elasticsearch');
-
-const elasticUrl = 'http://192.168.1.3:9200';
-const esClient = new Client({ node: elasticUrl });
+const Book = require('../models').Book
 
 let createBook = async (req, res) => {
     try {
         let book = await Book.create(req.body)
-        
-        esClient.index({
-            index:'books',
-            body: { "title_without_series": book.title_without_series, "book_id": book.book_id} })
-        
-            res.status(201).json({
-            status: 'successful',
-            data: { book },
+
+        let data = JSON.stringify({
+            "title_without_series": book.title_without_series,
+            "book_id": book.book_id
         })
+
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: process.env.ES_URL,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: data
+        }
+
+        let response = await axios.request(config)
+
+        if (response.status === 201) {
+            res.status(201).json({
+                status: 'successful',
+                data: { book },
+            })
+        } else {
+            res.status(response.status).json({
+                status: 'error',
+                message: 'Elasticsearch error',
+            })
+        }
     } catch (error) {
         console.log(error)
 
@@ -139,39 +155,37 @@ let deleteBook = async (req, res) => {
 
 let searchBook = async (req, res) => {
     try {
-      let config = {
-        method: 'get',
-        maxBodyLength: Infinity,
-        url: 'http://192.168.1.3:5001/' + req.body.book,
-        headers: {
-          'Content-Type': 'application/json',
+        let config = {
+            method: 'get',
+            maxBodyLength: Infinity,
+            url: process.env.ES_URL + "?search=" + req.query.q,
+            headers: {
+                'Content-Type': 'application/json',
+            }
         }
-      };
-  
-      const response = await axios.request(config);
-  
-      if (response.status === 200) {
-        res.status(200).json({
-          status: 'success',
-          data: response.data,
-        });
-      } else {
-        res.status(response.status)
-        .json({
-          status: 'error',
-          message: 'Unexpected status code',
-        });
-      }
-    } catch (error) {
-      console.error('Error:', error);
 
-      res.status(500).json({
-        status: 'error',
-        message: 'Internal Server Error',
-      });
+        let response = await axios.request(config)
+
+        if (response.status === 200) {
+            res.status(200).json({
+                status: 'success',
+                data: response.data.data,
+            })
+        } else {
+            res.status(response.status).json({
+                status: 'error',
+                message: 'Unexpected status code',
+            })
+        }
+    } catch (error) {
+        console.error('Error:', error)
+
+        res.status(500).json({
+            status: 'error',
+            message: 'Internal Server Error',
+        })
     }
-  };
-  
+}
 
 module.exports = {
     createBook,

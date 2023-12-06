@@ -2,13 +2,13 @@ version: '3'
 services:
   api-server:
     build: 
-      context: bkmrkd_backend
+      context: backend
       dockerfile: Dockerfile
     restart: always
     ports:
       - '5000:5000'
     volumes: 
-      - ./bkmrkd_backend:/app
+      - ./backend:/app
       - /app/node_modules/bcrypt/
     links:
       - elasticsearch
@@ -26,7 +26,6 @@ services:
       - '5001:5001'
     volumes: 
       - ./elasticsearch:/app
-      - /app/node_modules/bcrypt/
     links:
       - elasticsearch
     depends_on:
