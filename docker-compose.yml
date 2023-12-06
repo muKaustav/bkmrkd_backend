@@ -1,13 +1,13 @@
 version: '3'
 services:
   api-server:
-    build: 
+    build:
       context: backend
       dockerfile: Dockerfile
     restart: always
     ports:
       - '5000:5000'
-    volumes: 
+    volumes:
       - ./backend:/app
       - /app/node_modules/bcrypt/
     links:
@@ -16,16 +16,17 @@ services:
       - elasticsearch
     networks:
       - bkmrkd
-  
+
   elastic-server:
-    build: 
+    build:
       context: elasticsearch
       dockerfile: Dockerfile
     restart: always
     ports:
       - '5001:5001'
-    volumes: 
+    volumes:
       - ./elasticsearch:/app
+      - ./elasticsearch:/bitnami/elasticsearch/data
     links:
       - elasticsearch
     depends_on:
@@ -42,9 +43,11 @@ services:
       - ELASTICSEARCH_ADVERTISED_HOSTNAME=elasticsearch
       - ELASTICSEARCH_ADVERTISED_PORT_NUMBER=9200
       - ELASTICSEARCH_ALLOW_REMOTE_CONNECTIONS=yes
+    volumes:
+      - ./elasticsearch:/bitnami/elasticsearch/data
     networks:
       - bkmrkd
-  
+
 networks:
   bkmrkd:
     driver: bridge
