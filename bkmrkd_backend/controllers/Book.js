@@ -1,10 +1,19 @@
 const Book = require('../models').Book
+const axios = require('axios')
+const { Client } = require('@elastic/elasticsearch');
+
+const elasticUrl = 'http://192.168.1.3:9200';
+const esClient = new Client({ node: elasticUrl });
 
 let createBook = async (req, res) => {
     try {
         let book = await Book.create(req.body)
-
-        res.status(201).json({
+        
+        esClient.index({
+            index:'books',
+            body: { "title_without_series": book.title_without_series, "book_id": book.book_id} })
+        
+            res.status(201).json({
             status: 'successful',
             data: { book },
         })
@@ -128,10 +137,47 @@ let deleteBook = async (req, res) => {
     }
 }
 
+let searchBook = async (req, res) => {
+    try {
+      let config = {
+        method: 'get',
+        maxBodyLength: Infinity,
+        url: 'http://192.168.1.3:5001/' + req.body.book,
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      };
+  
+      const response = await axios.request(config);
+  
+      if (response.status === 200) {
+        res.status(200).json({
+          status: 'success',
+          data: response.data,
+        });
+      } else {
+        res.status(response.status)
+        .json({
+          status: 'error',
+          message: 'Unexpected status code',
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+
+      res.status(500).json({
+        status: 'error',
+        message: 'Internal Server Error',
+      });
+    }
+  };
+  
+
 module.exports = {
     createBook,
     getBooks,
     getBookById,
     updateBook,
-    deleteBook
+    deleteBook,
+    searchBook
 }

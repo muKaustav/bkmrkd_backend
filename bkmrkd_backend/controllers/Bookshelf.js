@@ -34,7 +34,7 @@ let getBookshelves = async (req, res) => {
         let bookshelves = await Bookshelf.findAll({
             limit: pageSize,
             offset: offset,
-            attributes: ['id', 'name', 'type', 'image'],
+            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
         })
 
         res.status(200).json({
@@ -170,12 +170,6 @@ let getBookshelfBooks = async (req, res) => {
             attributes: ['book_id', 'book_average_rating', 'cover_page']
         })
 
-        for (let i = 0; i < books.length; i++) {
-            let book = books[i]
-
-            delete book.dataValues.BookshelfBook
-        }
-
         res.status(200).json({
             status: 'successful',
             data: { books },
@@ -279,25 +273,8 @@ let getMyBookshelves = async (req, res) => {
             where: {
                 owner: userId,
             },
-            attributes: ['id', 'name', 'type', 'image'],
+            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
         })
-
-        for (let i = 0; i < bookshelves.length; i++) {
-            let bookshelf = bookshelves[i]
-
-            let books = await bookshelf.getBooks({
-                limit: 5,
-                attributes: ['book_id', 'book_average_rating', 'cover_page']
-            })
-
-            bookshelf.dataValues.books = books
-
-            for (let j = 0; j < books.length; j++) {
-                let book = books[j]
-
-                delete book.dataValues.BookshelfBook
-            }
-        }
 
         res.status(200).json({
             status: 'successful',
@@ -326,9 +303,9 @@ let getBookshelvesByOwner = async (req, res) => {
             offset: offset,
             where: {
                 owner: userId,
-                type: 'PUBLIC',
+                bookshelf_type: 'PUBLIC',
             },
-            attributes: ['id', 'name', 'image'],
+            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_image'],
         })
 
         res.status(200).json({
