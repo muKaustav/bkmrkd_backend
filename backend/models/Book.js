@@ -9,7 +9,14 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: false,
             validate: {
-                len: [2, 50000],
+                len: [2, 5000],
+            },
+        },
+        author: {
+            type: DataTypes.TEXT,
+            allowNull: true,
+            validate: {
+                len: [2, 5000],
             },
         },
         book_description: {
@@ -27,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000],
+                len: [2, 5000],
             },
         },
         ratings_count: {
@@ -42,21 +49,21 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000],
+                len: [2, 5000],
             },
         },
         book_url: {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000],
+                len: [2, 5000],
             },
         },
         is_ebook: {
             type: DataTypes.TEXT,
             allowNull: true,
             validate: {
-                len: [2, 50000],
+                len: [2, 5000],
             },
         },
         num_pages: {

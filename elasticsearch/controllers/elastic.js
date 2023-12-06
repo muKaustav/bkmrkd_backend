@@ -48,7 +48,7 @@ let search = async (req, res) => {
                 }
             })
         } else {
-            res.status(404).json({
+            res.status(200).json({
                 data: {
                     total_results: 0,
                     books: []

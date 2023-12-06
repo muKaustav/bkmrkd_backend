@@ -171,11 +171,6 @@ let searchBook = async (req, res) => {
                 status: 'success',
                 data: response.data.data,
             })
-        } else {
-            res.status(response.status).json({
-                status: 'error',
-                message: 'Unexpected status code',
-            })
         }
     } catch (error) {
         console.error('Error:', error)
