@@ -1,10 +1,12 @@
 const cors = require('cors')
 const express = require('express')
 const cookieParser = require("cookie-parser")
+const db = require('./models')
+
 const userRoutes = require('./routes/User')
 const bookRoutes = require("./routes/Book")
 const bookshelfRoutes = require("./routes/Bookshelf")
-const db = require('./models')
+const reviewRoutes = require("./routes/Review")
 
 const app = express()
 
@@ -20,6 +22,7 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes)
 app.use('/api/books', bookRoutes)
 app.use('/api/bookshelves', bookshelfRoutes)
+app.use('/api/reviews', reviewRoutes)
 
 app.get('*', (req, res) => {
     res.status(404).json({ status: 'error', message: 'Invalid route' })

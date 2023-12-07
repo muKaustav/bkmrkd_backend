@@ -5,8 +5,10 @@ let createBook = async (req, res) => {
     try {
         let book = await Book.create(req.body)
 
+        let title_without_series = book.title_without_series
+
         let data = JSON.stringify({
-            "title_without_series": book.title_without_series,
+            "title_without_series": title_without_series.toLowerCase(),
             "book_id": book.book_id
         })
 
@@ -170,11 +172,6 @@ let searchBook = async (req, res) => {
             res.status(200).json({
                 status: 'success',
                 data: response.data.data,
-            })
-        } else {
-            res.status(response.status).json({
-                status: 'error',
-                message: 'Unexpected status code',
             })
         }
     } catch (error) {
