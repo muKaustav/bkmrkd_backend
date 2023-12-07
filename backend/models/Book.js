@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
     const Book = sequelize.define('Book', {
         book_id: {
             type: DataTypes.INTEGER,
-            autoIncrement: 36489666,
+            autoIncrement: true,
             primaryKey: true,
         },
         title_without_series: {
@@ -80,6 +80,8 @@ module.exports = (sequelize, DataTypes) => {
             defaultValue: DataTypes.NOW,
             allowNull: true,
         }
+    }, {
+        initialAutoIncrement: 36489666,
     })
 
     Book.associate = models => {
