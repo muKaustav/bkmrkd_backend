@@ -5,36 +5,36 @@ let createBook = async (req, res) => {
     try {
         let book = await Book.create(req.body)
 
+        let title_without_series = book.title_without_series
+
         let data = JSON.stringify({
-            "title_without_series": book.title_without_series,
+            "title_without_series": title_without_series.toLowerCase(),
             "book_id": book.book_id
         })
 
-        res.send(data)
+        let config = {
+            method: 'post',
+            maxBodyLength: Infinity,
+            url: process.env.ES_URL,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: data
+        }
 
-        // let config = {
-        //     method: 'post',
-        //     maxBodyLength: Infinity,
-        //     url: process.env.ES_URL,
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     data: data
-        // }
+        let response = await axios.request(config)
 
-        // let response = await axios.request(config)
-
-        // if (response.status === 201) {
-        //     res.status(201).json({
-        //         status: 'successful',
-        //         data: { book },
-        //     })
-        // } else {
-        //     res.status(response.status).json({
-        //         status: 'error',
-        //         message: 'Elasticsearch error',
-        //     })
-        // }
+        if (response.status === 201) {
+            res.status(201).json({
+                status: 'successful',
+                data: { book },
+            })
+        } else {
+            res.status(response.status).json({
+                status: 'error',
+                message: 'Elasticsearch error',
+            })
+        }
     } catch (error) {
         console.log(error)
 
