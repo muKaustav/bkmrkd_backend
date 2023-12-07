@@ -10,29 +10,31 @@ let createBook = async (req, res) => {
             "book_id": book.book_id
         })
 
-        let config = {
-            method: 'post',
-            maxBodyLength: Infinity,
-            url: process.env.ES_URL,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            data: data
-        }
+        res.send(data)
 
-        let response = await axios.request(config)
+        // let config = {
+        //     method: 'post',
+        //     maxBodyLength: Infinity,
+        //     url: process.env.ES_URL,
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     data: data
+        // }
 
-        if (response.status === 201) {
-            res.status(201).json({
-                status: 'successful',
-                data: { book },
-            })
-        } else {
-            res.status(response.status).json({
-                status: 'error',
-                message: 'Elasticsearch error',
-            })
-        }
+        // let response = await axios.request(config)
+
+        // if (response.status === 201) {
+        //     res.status(201).json({
+        //         status: 'successful',
+        //         data: { book },
+        //     })
+        // } else {
+        //     res.status(response.status).json({
+        //         status: 'error',
+        //         message: 'Elasticsearch error',
+        //     })
+        // }
     } catch (error) {
         console.log(error)
 

@@ -61,10 +61,8 @@ module.exports = (sequelize, DataTypes) => {
         },
         is_ebook: {
             type: DataTypes.TEXT,
+            defaultValue: 'false',
             allowNull: true,
-            validate: {
-                len: [2, 5000],
-            },
         },
         num_pages: {
             type: DataTypes.FLOAT,
