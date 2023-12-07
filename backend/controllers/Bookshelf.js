@@ -179,6 +179,7 @@ let getBookshelfBooks = async (req, res) => {
             status: 'successful',
             data: {
                 length: books.length,
+                bookshelf: bookshelf,
                 books: books,
             },
         })
