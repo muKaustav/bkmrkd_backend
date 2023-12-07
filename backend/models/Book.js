@@ -2,7 +2,7 @@ module.exports = (sequelize, DataTypes) => {
     const Book = sequelize.define('Book', {
         book_id: {
             type: DataTypes.INTEGER,
-            autoIncrement: true,
+            autoIncrement: 36489666,
             primaryKey: true,
         },
         title_without_series: {
