@@ -1,5 +1,6 @@
 const Book = require('../models').Book
 const Bookshelf = require('../models').Bookshelf
+const redisClient = require('../config/redis')
 
 let createBookshelf = async (req, res) => {
     try {
@@ -9,6 +10,8 @@ let createBookshelf = async (req, res) => {
             owner,
             ...req.body,
         })
+
+        await redisClient.del('bookshelves:*')
 
         res.status(201).json({
             status: 'successful',
@@ -31,16 +34,28 @@ let getBookshelves = async (req, res) => {
 
         let offset = (page - 1) * pageSize
 
-        let bookshelves = await Bookshelf.findAll({
-            limit: pageSize,
-            offset: offset,
-            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
-        })
+        let cachedBookshelves = await redisClient.get(`bookshelves:${page}:${pageSize}`)
 
-        res.status(200).json({
-            status: 'successful',
-            data: { bookshelves },
-        })
+        if (cachedBookshelves) {
+            return res.status(200).json({
+                status: 'successful',
+                data: JSON.parse(cachedBookshelves),
+            })
+        } else {
+            let bookshelves = await Bookshelf.findAll({
+                limit: pageSize,
+                offset: offset,
+                attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
+            })
+
+            await redisClient.setEx(`bookshelves:${page}:${pageSize}`, 3600, JSON.stringify({ bookshelves }))
+
+            res.status(200).json({
+                status: 'successful',
+                data: { bookshelves },
+            })
+
+        }
     } catch (error) {
         console.log(error)
 
@@ -53,23 +68,36 @@ let getBookshelves = async (req, res) => {
 
 let getBookshelfById = async (req, res) => {
     try {
-        let bookshelfId = req.params.id
+        let cachedBookshelf = await redisClient.get(`bookshelves:${req.params.id}`)
 
-        let bookshelf = await Bookshelf.findByPk(bookshelfId)
-
-        if (!bookshelf) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Bookshelf not found',
+        if (cachedBookshelf) {
+            return res.status(200).json({
+                status: 'successful',
+                data: JSON.parse(cachedBookshelf),
             })
-        }
+        } else {
+            let bookshelfId = req.params.id
 
-        res.status(200).json({
-            status: 'successful',
-            data: { bookshelf },
-        })
+            let bookshelf = await Bookshelf.findByPk(bookshelfId)
+
+            if (!bookshelf) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Bookshelf not found',
+                })
+            }
+
+            await redisClient.setEx(`bookshelves:${req.params.id}`, 3600, JSON.stringify({ bookshelf }))
+
+            res.status(200).json({
+                status: 'successful',
+                data: { bookshelf },
+            })
+
+        }
     } catch (error) {
         console.log(error)
+
         res.status(500).json({
             status: 'error',
             message: 'Internal Server Error',
@@ -155,34 +183,45 @@ let getBookshelfBooks = async (req, res) => {
 
         let offset = (page - 1) * pageSize
 
-        let bookshelf = await Bookshelf.findByPk(bookshelfId)
+        let cachedBooks = await redisClient.get(`bookshelves:getBookshelfBooks:${req.params.id}:${page}:${pageSize}`)
 
-        if (!bookshelf) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Bookshelf not found',
+        if (cachedBooks) {
+            return res.status(200).json({
+                status: 'successful',
+                data: JSON.parse(cachedBooks),
+            })
+        } else {
+            let bookshelf = await Bookshelf.findByPk(bookshelfId)
+
+            if (!bookshelf) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Bookshelf not found',
+                })
+            }
+
+            let books = await bookshelf.getBooks({
+                limit: pageSize,
+                offset: offset,
+            })
+
+            for (let i = 0; i < books.length; i++) {
+                let book = books[i]
+
+                delete book.dataValues.BookshelfBook
+            }
+
+            await redisClient.setEx(`bookshelves:getBookshelfBooks:${req.params.id}:${page}:${pageSize}`, 3600, JSON.stringify({ length: books.length, bookshelf, books }))
+
+            res.status(200).json({
+                status: 'successful',
+                data: {
+                    length: books.length,
+                    bookshelf: bookshelf,
+                    books: books,
+                },
             })
         }
-
-        let books = await bookshelf.getBooks({
-            limit: pageSize,
-            offset: offset,
-        })
-
-        for (let i = 0; i < books.length; i++) {
-            let book = books[i]
-
-            delete book.dataValues.BookshelfBook
-        }
-
-        res.status(200).json({
-            status: 'successful',
-            data: {
-                length: books.length,
-                bookshelf: bookshelf,
-                books: books,
-            },
-        })
     } catch (error) {
         console.log(error)
         res.status(500).json({
@@ -276,36 +315,47 @@ let getMyBookshelves = async (req, res) => {
 
         let offset = (page - 1) * pageSize
 
-        let bookshelves = await Bookshelf.findAll({
-            limit: pageSize,
-            offset: offset,
-            where: {
-                owner: userId,
-            },
-            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
-        })
+        let cachedBookshelves = await redisClient.get(`bookshelves:myBookshelves:${req.user.user.id}:${page}:${pageSize}`)
 
-        for (let i = 0; i < bookshelves.length; i++) {
-            let bookshelf = bookshelves[i]
-
-            let books = await bookshelf.getBooks({
-                limit: 5,
-                attributes: ['book_id', 'cover_page']
+        if (cachedBookshelves) {
+            return res.status(200).json({
+                status: 'successful',
+                data: JSON.parse(cachedBookshelves),
+            })
+        } else {
+            let bookshelves = await Bookshelf.findAll({
+                limit: pageSize,
+                offset: offset,
+                where: {
+                    owner: userId,
+                },
+                attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_type', 'bookshelf_image'],
             })
 
-            bookshelf.dataValues.books = books
+            for (let i = 0; i < bookshelves.length; i++) {
+                let bookshelf = bookshelves[i]
 
-            for (let j = 0; j < books.length; j++) {
-                let book = books[j]
+                let books = await bookshelf.getBooks({
+                    limit: 5,
+                    attributes: ['book_id', 'cover_page']
+                })
 
-                delete book.dataValues.BookshelfBook
+                bookshelf.dataValues.books = books
+
+                for (let j = 0; j < books.length; j++) {
+                    let book = books[j]
+
+                    delete book.dataValues.BookshelfBook
+                }
             }
-        }
 
-        res.status(200).json({
-            status: 'successful',
-            data: { bookshelves },
-        })
+            await redisClient.setEx(`bookshelves:myBookshelves:${req.user.user.id}:${page}:${pageSize}`, 3600, JSON.stringify({ bookshelves }))
+
+            res.status(200).json({
+                status: 'successful',
+                data: { bookshelves },
+            })
+        }
     } catch (error) {
         console.log(error)
 
@@ -324,20 +374,31 @@ let getBookshelvesByOwner = async (req, res) => {
 
         let offset = (page - 1) * pageSize
 
-        let bookshelves = await Bookshelf.findAll({
-            limit: pageSize,
-            offset: offset,
-            where: {
-                owner: userId,
-                bookshelf_type: 'PUBLIC',
-            },
-            attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_image'],
-        })
+        let cachedBookshelves = await redisClient.get(`bookshelves:ByOwner:${req.params.id}:${page}:${pageSize}`)
 
-        res.status(200).json({
-            status: 'successful',
-            data: { bookshelves },
-        })
+        if (cachedBookshelves) {
+            return res.status(200).json({
+                status: 'successful',
+                data: JSON.parse(cachedBookshelves),
+            })
+        } else {
+            let bookshelves = await Bookshelf.findAll({
+                limit: pageSize,
+                offset: offset,
+                where: {
+                    owner: userId,
+                    bookshelf_type: 'PUBLIC',
+                },
+                attributes: ['bookshelf_id', 'bookshelf_name', 'bookshelf_image'],
+            })
+
+            await redisClient.setEx(`bookshelves:ByOwner:${req.params.id}:${page}:${pageSize}`, 3600, JSON.stringify({ bookshelves }))
+
+            res.status(200).json({
+                status: 'successful',
+                data: { bookshelves },
+            })
+        }
     } catch (error) {
         console.log(error)
 
