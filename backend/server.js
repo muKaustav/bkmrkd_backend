@@ -10,10 +10,7 @@ const reviewRoutes = require("./routes/Review")
 
 const app = express()
 
-app.use(cors({
-    origin: 'http://192.168.1.5:3000',
-    credentials: true,
-}))
+app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
