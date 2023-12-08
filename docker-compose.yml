@@ -13,6 +13,16 @@ services:
     networks:
       - bkmrkd
 
+  redis-server:
+    image: bitnami/redis
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - '6379:6379'
+    restart: always
+    networks:
+      - bkmrkd
+
 networks:
   bkmrkd:
     driver: bridge
