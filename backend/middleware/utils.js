@@ -3,7 +3,11 @@ const jwt = require('jsonwebtoken')
 
 let isAuth = (req, res, next) => {
     let token = req.cookies.jwt
-    console.log(token)
+    let header = req.headers.authorization
+
+    if (!token) {
+        token = header && header.split(' ')[1]
+    }
 
     if (!token) {
         return res.status(401).json({
