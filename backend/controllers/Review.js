@@ -1,4 +1,5 @@
 const Review = require('../models').Review
+const User = require('../models').User
 const redisClient = require('../config/redis')
 
 let roundToHalf = (value) => {
@@ -202,7 +203,16 @@ let getReviewsOfBook = async (req, res) => {
                 attributes: ['id', 'rating', 'content', 'createdAt', 'userId', 'bookId'],
             })
 
-            await redisClient.setEx(`reviews:book:${req.params.id}`, 3600, JSON.stringify({ reviews }))
+            for (let i = 0; i < reviews.length; i++) {
+                let review = reviews[i]
+
+                let user = await User.findByPk(review.userId, {
+                    attributes: ['id', 'name'],
+                })
+
+                review.dataValues.user = user
+                delete review.dataValues.userId
+            }
 
             res.status(200).json({
                 status: 'successful',
