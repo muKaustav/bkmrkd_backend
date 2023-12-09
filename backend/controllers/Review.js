@@ -69,7 +69,7 @@ let getReviews = async (req, res) => {
             await redisClient.setEx(`reviews:${page}:${pageSize}`, 3600, JSON.stringify({ reviews }))
 
             res.status(200).json({
-                status: 'success',
+                status: 'successful',
                 length: reviews.length,
                 data: { reviews },
             })
@@ -108,7 +108,7 @@ let getReviewById = async (req, res) => {
             await redisClient.setEx(`getReviewById:${req.params.id}`, 3600, JSON.stringify({ review }))
 
             res.status(200).json({
-                status: 'success',
+                status: 'successful',
                 data: { review },
             })
         }
@@ -205,7 +205,7 @@ let getReviewsOfBook = async (req, res) => {
             await redisClient.setEx(`reviews:book:${req.params.id}`, 3600, JSON.stringify({ reviews }))
 
             res.status(200).json({
-                status: 'success',
+                status: 'successful',
                 length: reviews.length,
                 data: { reviews },
             })

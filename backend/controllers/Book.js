@@ -59,7 +59,7 @@ let getBooks = async (req, res) => {
 
         if (cachedBooks) {
             return res.status(200).json({
-                status: "successful",
+                status: "succesful",
                 length: JSON.parse(cachedBooks).books.length,
                 data: JSON.parse(cachedBooks)
             })
@@ -207,7 +207,7 @@ let searchBook = async (req, res) => {
                 await redisClient.setEx(`books:search:${req.query.q}`, 3600, JSON.stringify(response.data.data))
 
                 res.status(200).json({
-                    status: 'success',
+                    status: 'successful',
                     data: response.data.data,
                 })
             }
