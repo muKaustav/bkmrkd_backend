@@ -6,6 +6,7 @@ const router = express.Router()
 
 router.post('/', isAuth, reviewController.createReview)
 router.get('/', reviewController.getReviews)
+router.get('/book/:id', reviewController.getReviewsOfBook)
 router.get('/:id', reviewController.getReviewById)
 router.put('/:id', isAuth, reviewController.updateReview)
 router.delete('/:id', isAuth, reviewController.deleteReview)

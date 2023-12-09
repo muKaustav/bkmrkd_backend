@@ -1,4 +1,5 @@
 const Review = require('../models').Review
+const redisClient = require('../config/redis')
 
 let roundToHalf = (value) => {
     let roundedValue = Math.round(value * 2) / 2
@@ -50,17 +51,29 @@ let getReviews = async (req, res) => {
 
         let offset = (page - 1) * pageSize
 
-        let reviews = await Review.findAll({
-            limit: pageSize,
-            offset: offset,
-            attributes: ['id', 'rating', 'content', 'createdAt', 'userId', 'bookId'],
-        })
+        let cachedReview = await redisClient.get(`reviews:${page}:${pageSize}`)
 
-        res.status(200).json({
-            status: 'success',
-            length: reviews.length,
-            data: { reviews },
-        })
+        if (cachedReview) {
+            return res.status(200).json({
+                status: "successful",
+                length: JSON.parse(cachedReview).reviews.length,
+                data: JSON.parse(cachedReview)
+            })
+        } else {
+            let reviews = await Review.findAll({
+                limit: pageSize,
+                offset: offset,
+                attributes: ['id', 'rating', 'content', 'createdAt', 'userId', 'bookId'],
+            })
+
+            await redisClient.setEx(`reviews:${page}:${pageSize}`, 3600, JSON.stringify({ reviews }))
+
+            res.status(200).json({
+                status: 'success',
+                length: reviews.length,
+                data: { reviews },
+            })
+        }
     } catch (error) {
         console.log(error)
 
@@ -75,21 +88,33 @@ let getReviewById = async (req, res) => {
     try {
         let reviewId = req.params.id
 
-        let review = await Review.findByPk(reviewId)
+        let cachedReview = await redisClient.get(`getReviewById:${req.params.id}`)
 
-        if (!review) {
-            return res.status(404).json({
-                status: 'error',
-                message: 'Review not found',
+        if (cachedReview) {
+            return res.status(200).json({
+                status: "successful",
+                data: JSON.parse(cachedReview)
+            })
+        } else {
+            let review = await Review.findByPk(reviewId)
+
+            if (!review) {
+                return res.status(404).json({
+                    status: 'error',
+                    message: 'Review not found',
+                })
+            }
+
+            await redisClient.setEx(`getReviewById:${req.params.id}`, 3600, JSON.stringify({ review }))
+
+            res.status(200).json({
+                status: 'success',
+                data: { review },
             })
         }
-
-        res.status(200).json({
-            status: 'success',
-            data: { review },
-        })
     } catch (error) {
         console.log(error)
+
         res.status(500).json({
             status: 'error',
             message: 'Internal Server Error',
@@ -157,10 +182,49 @@ let deleteReview = async (req, res) => {
     }
 }
 
+let getReviewsOfBook = async (req, res) => {
+    try {
+        let book_id = req.params.id
+
+        let cachedReview = await redisClient.get(`reviews:book:${req.params.id}`)
+
+        if (cachedReview) {
+            return res.status(200).json({
+                status: "successful",
+                length: JSON.parse(cachedReview).reviews.length,
+                data: JSON.parse(cachedReview)
+            })
+        } else {
+            let reviews = await Review.findAll({
+                where: {
+                    bookId: book_id,
+                },
+                attributes: ['id', 'rating', 'content', 'createdAt', 'userId', 'bookId'],
+            })
+
+            await redisClient.setEx(`reviews:book:${req.params.id}`, 3600, JSON.stringify({ reviews }))
+
+            res.status(200).json({
+                status: 'success',
+                length: reviews.length,
+                data: { reviews },
+            })
+        }
+    } catch (error) {
+        console.log(error)
+
+        res.status(500).json({
+            status: 'error',
+            message: 'Internal Server Error',
+        })
+    }
+}
+
 module.exports = {
     createReview,
     getReviews,
     getReviewById,
     updateReview,
     deleteReview,
+    getReviewsOfBook,
 }

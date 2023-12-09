@@ -53,7 +53,7 @@ let signup = async (req, res) => {
         let user = await User.findOne({ where: { email } })
 
         if (role && !['USER', 'ADMIN'].includes(role)) {
-            return res.status(400).json({ status: 'error', message: 'Invalid role' });
+            return res.status(400).json({ status: 'error', message: 'Invalid role' })
         }
 
         if (user) {
