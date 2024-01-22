@@ -11,7 +11,7 @@
 ## 📝 | System Design
 
 <p align = center>
-    <img alt="Project Logo" src="https://raw.githubusercontent.com/muKaustav/bkmrkd_backend/main/assets/arch.jpeg" target="_blank" />
+    <img alt="Project Logo" src="https://raw.githubusercontent.com/muKaustav/bkmrkd_backend/main/assets/system_des.png" target="_blank" />
 </p>
 
 ### Current Architecture:
