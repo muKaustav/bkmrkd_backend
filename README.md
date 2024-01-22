@@ -67,9 +67,9 @@ Recommendation Engine: https://github.com/muKaustav/bkmrkd_recommender
 
 - The entire application is Dockerized, which means that each component is containerized using Docker. This ensures consistency across environments and simplifies deployment and scaling.
 
-- The architecture suggests a microservices approach, where each service is loosely coupled and can be developed, deployed, and scaled independently.
+- The architecture is microserviced, where each service is loosely coupled and can be developed, deployed, and scaled independently.
 
-- The use of both relational (PostgreSQL) and NoSQL (MongoDB) databases indicates that the application handles different types of data and workloads, choosing the right tool for each job.
+- Relational (PostgreSQL) and NoSQL (MongoDB) databases handle different types of data and workloads, choosing the right tool for each job.
 
 This architecture is designed to be scalable and resilient, with each component serving a specific purpose and being able to be scaled independently as needed.
 
